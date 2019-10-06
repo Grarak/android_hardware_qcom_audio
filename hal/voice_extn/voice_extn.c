@@ -455,6 +455,24 @@ int voice_extn_set_parameters(struct audio_device *adev,
 
     ALOGV_IF(kv_pairs != NULL, "%s: enter: %s", __func__, kv_pairs);
 
+    err = str_parms_get_int(parms, "phoneid", &value);
+    if (err >= 0) {
+        str_parms_del(parms, "phoneid");
+        int phoneid = value;
+        if (adev->mode == AUDIO_MODE_IN_CALL) {
+            if (phoneid == 0) {
+                update_call_states(adev, VOICEMMODE2_VSID, CALL_INACTIVE);
+                update_call_states(adev, VOICEMMODE1_VSID, CALL_ACTIVE);
+            } else if (phoneid == 1) {
+                update_call_states(adev, VOICEMMODE1_VSID, CALL_INACTIVE);
+                update_call_states(adev, VOICEMMODE2_VSID, CALL_ACTIVE);
+            }
+        } else {
+            update_call_states(adev, VOICEMMODE1_VSID, CALL_INACTIVE);
+            update_call_states(adev, VOICEMMODE2_VSID, CALL_INACTIVE);
+        }
+    }
+
     err = str_parms_get_int(parms, AUDIO_PARAMETER_KEY_VSID, &value);
     if (err >= 0) {
         str_parms_del(parms, AUDIO_PARAMETER_KEY_VSID);
